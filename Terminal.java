@@ -1,4 +1,4 @@
-import java.util.Objects;
+8import java.util.Objects;
 import java.io.File;
 import java.util.Arrays;
 
@@ -133,6 +133,7 @@ public class Terminal {
         else{
             wrong_command();
         }
+        Arrays.fill(parser.args, null);
     }
 
 }
