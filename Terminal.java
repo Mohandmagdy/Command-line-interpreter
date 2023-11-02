@@ -5,80 +5,100 @@ import java.util.Arrays;
 public class Terminal {
     Parser parser;
     String curr_directory;
-    public Terminal(){
+
+    public Terminal() {
         parser = new Parser();
-        curr_directory = ".";
+        curr_directory = System.getProperty("user.home");
     }
-    public void echo(){
-        for(String text : parser.args){
+
+    public void echo() {
+        for (String text : parser.args) {
             System.out.print(text + ' ');
         }
         System.out.println();
     }
-    public void pwd(){
+
+    public void pwd() {
+        if (parser.args[0] != null) {
+            System.out.println("Wrong arguments");
+            return;
+        }
         File currentDir = new File(curr_directory);
         System.out.println(currentDir.getAbsoluteFile());
     }
-    public void cd(){
-        if(Objects.equals(parser.args[0], "..")){
+
+    public void cd() {
+        if (parser.args.length > 1) {
+            System.out.println("Wrong arguments");
+            return;
+        }
+        if (Objects.equals(parser.args[0], "..")) {
             File file = new File(curr_directory);
             String file_parent = file.getParent();
-            if(file_parent != null){
+            if (file_parent != null) {
                 curr_directory = file_parent;
             } else {
                 System.out.println("The file doesn't have a parent directory");
             }
-        } else if(parser.args[0] == null){
+        } else if (parser.args[0] == null) {
             curr_directory = System.getProperty("user.home");
-        } else{
-            if(parser.args[0].contains("/")){
+        } else {
+            if (parser.args[0].contains("/")) {
                 File file = new File(parser.args[0]);
-                if(file.exists()){
+                if (file.exists()) {
                     curr_directory = parser.args[0];
-                } else{
+                } else {
                     System.out.println("The directory is not found");
                 }
-            } else{
-                File file = new File(curr_directory+"\\"+parser.args[0]);
-                if(file.exists()){
-                    curr_directory = curr_directory+"\\"+parser.args[0];
-                } else{
+            } else {
+                File file = new File(curr_directory + "\\" + parser.args[0]);
+                if (file.exists()) {
+                    curr_directory = curr_directory + "\\" + parser.args[0];
+                } else {
                     System.out.println("The directory is not found");
                 }
             }
         }
     }
-    public void ls(){
+
+    public void ls() {
+        if (Objects.equals(parser.args[0], "-r") && parser.args.length == 1) {
+            ls_reversed();
+            return;
+        } else if (parser.args[0] != null) {
+            System.out.println("Wrong arguments");
+            return;
+        }
         File currentDir = new File(curr_directory);
         File[] files = currentDir.listFiles();
-        if(files != null){
+        if (files != null) {
             Arrays.sort(files, (f1, f2) -> f1.getName().compareTo(f2.getName()));
-            for(File file : files){
+            for (File file : files) {
                 System.out.print(file.getName() + "  ");
             }
             System.out.println();
-        }
-        else{
+        } else {
             System.out.println("The current directory has no content");
         }
     }
-    public void ls_reversed(){
+
+    public void ls_reversed() {
         File currentDir = new File(curr_directory);
         File[] files = currentDir.listFiles();
-        if(files != null){
+        if (files != null) {
             Arrays.sort(files, (f1, f2) -> f2.getName().compareTo(f1.getName()));
-            for(File file : files){
+            for (File file : files) {
                 System.out.print(file.getName() + "  ");
             }
             System.out.println();
-        }
-        else{
+        } else {
             System.out.println("The current directory has no content");
         }
     }
-    public void mkdir(){
-        for(String dir: parser.args){
-            if(dir.contains("/")) {
+
+    public void mkdir() {
+        for (String dir : parser.args) {
+            if (dir.contains("/")) {
                 File file = new File(dir);
                 boolean state = file.mkdir();
                 if (state) {
@@ -86,9 +106,8 @@ public class Terminal {
                 } else {
                     System.out.println(dir + " directory couldn't be created");
                 }
-            } else{
+            } else {
                 dir = curr_directory + "\\" + dir;
-                System.out.println(dir);
                 File file = new File(dir);
                 boolean state = file.mkdir();
                 if (state) {
@@ -99,41 +118,30 @@ public class Terminal {
             }
         }
     }
-    public void exit_code(){
+
+    public void exit_code() {
         System.out.println("Thank you for using our program");
         System.exit(0);
     }
-    public void wrong_command() {
-        if (Objects.equals(parser.args[0], "arguments")) {
-            System.out.println("wrong arguments");
-        } else {
-            System.out.println(parser.commandName + " is not a command");
-        }
-    }
 
-    public void chooseCommandAction(String input){
-        boolean state = parser.parse(input);
-        if(state) {
-            if(Objects.equals(parser.commandName, "exit")){
-                exit_code();
-            } else if (Objects.equals(parser.commandName, "echo")) {
-                echo();
-            } else if (Objects.equals(parser.commandName, "pwd")) {
-                pwd();
-            } else if (Objects.equals(parser.commandName, "cd")) {
-                cd();
-            } else if (Objects.equals(parser.commandName, "ls")) {
-                ls();
-            } else if (Objects.equals(parser.commandName, "ls-r")) {
-                ls_reversed();
-            } else if (Objects.equals(parser.commandName, "mkdir")) {
-                mkdir();
-            }
-        }
-        else{
-            wrong_command();
-        }
+    public void chooseCommandAction(String input) {
         Arrays.fill(parser.args, null);
-    }
+        parser.parse(input);
+        if (Objects.equals(parser.commandName, "exit")) {
+            exit_code();
+        } else if (Objects.equals(parser.commandName, "echo")) {
+            echo();
+        } else if (Objects.equals(parser.commandName, "pwd")) {
+            pwd();
+        } else if (Objects.equals(parser.commandName, "cd")) {
+            cd();
+        } else if (Objects.equals(parser.commandName, "ls")) {
+            ls();
+        } else if (Objects.equals(parser.commandName, "mkdir")) {
+            mkdir();
+        } else {
+            System.out.println("Wrong command");
+        }
 
+    }
 }
