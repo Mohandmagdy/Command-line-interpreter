@@ -1,11 +1,9 @@
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.io.File;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -223,32 +221,25 @@ public class Terminal {
     }
     
     public void cp() {
-        if (parser.args.length != 2) {
+        if (parser.args.length == 2) {
+            String sourcePath = parser.args[0];
+            String destinationPath = parser.args[1];
+            
+            try (InputStream in = new FileInputStream(sourcePath);
+                 OutputStream out = new FileOutputStream(destinationPath)) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+                
+                System.out.println("File copied successfully.");
+            } catch (IOException e) {
+                System.err.println("Error copying the file: " + e.getMessage());
+            }
+        } else {
             System.out.println("Usage: cp <source_file> <destination_file>");
-            return;
-        }
-        
-        String sourceFilePath = parser.args[0];
-        String destinationFilePath = parser.args[1];
-        
-        File sourceFile = new File(sourceFilePath);
-        File destinationFile = new File(destinationFilePath);
-        
-        if (!sourceFile.exists()) {
-            System.out.println("Source file does not exist");
-            return;
-        }
-        
-        if (destinationFile.isDirectory()) {
-            // If the destination is a directory, create a file with the same name in that directory
-            destinationFile = new File(destinationFile.getAbsolutePath() + File.separator + sourceFile.getName());
-        }
-        
-        try {
-            Files.copy(sourceFile.toPath(), destinationFile.toPath());
-            System.out.println("File copied successfully");
-        } catch (IOException e) {
-            System.out.println("An error occurred while copying the file: " + e.getMessage());
         }
     }
     
