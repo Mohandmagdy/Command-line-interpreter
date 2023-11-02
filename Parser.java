@@ -11,47 +11,18 @@ public class Parser {
         commandName = "";
         args = new String[10];
     }
-    public boolean parse(String input) {
+    public void parse(String input) {
         String[] words = input.split(" ");
-        if (Objects.equals(words[0], "echo")) {
-            commandName = "echo";
+        commandName = words[0];
+        if (words.length > 1) {
             args = Arrays.copyOfRange(words, 1, words.length);
-        } else if (Objects.equals(words[0], "pwd")) {
-            commandName = "pwd";
-        } else if (Objects.equals(words[0], "cd")) {
-            commandName = "cd";
-            if(words.length == 2){
-                args[0] = words[1];
-            } else if (words.length > 2){
-                commandName = words[0];
-                args[0] = "arguments";
-                return false;
-            }
-        } else if (Objects.equals(words[0], "ls")) {
-            commandName = "ls";
-            if (words.length == 2) {
-                if (Objects.equals(words[1], "-r")) {
-                    commandName = "ls-r";
-                } else {
-                    commandName = words[0];
-                    args[0] = "arguments";
-                    return false;
-                }
-            } else if (words.length > 2) {
-                commandName = words[0];
-                args[0] = "arguments";
-                return false;
-            }
-
-        } else if (Objects.equals(words[0], "mkdir")) {
-            commandName = "mkdir";
-            args = Arrays.copyOfRange(words, 1, words.length);
-        } else if (Objects.equals(words[0], "exit")) {
-            commandName = "exit";
-        } else {
-            commandName = words[0];
-            return false;
         }
-        return true;
+    }
+
+    public String getCommandName(){
+        return commandName;
+    }
+    public String[] getArgs(){
+        return args;
     }
 }
