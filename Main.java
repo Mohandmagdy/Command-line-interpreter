@@ -5,8 +5,9 @@ public class Main {
 
         while(true){
             Scanner scanner = new Scanner(System.in);
-            System.out.println("Please enter your command.");
+            System.out.print(terminal.curr_directory + "> ");
             String command = scanner.nextLine();
+            command = command.replace("\\", "/");
             terminal.chooseCommandAction(command);
         }
     }
