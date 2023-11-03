@@ -336,7 +336,13 @@ public class Terminal {
     }
 
     public void cat() {
-        File f = new File( this.curr_directory+File.separator+this.parser.args[0]);
+        String myFile;
+        if(parser.args[0].contains("/")){
+            myFile = parser.args[0];
+        } else {
+            myFile = this.curr_directory+File.separator+this.parser.args[0];
+        }
+        File f = new File(myFile);
         if (!f.canRead()) {
             System.out.println("Wrong Path..!");
             return;
@@ -375,8 +381,12 @@ public class Terminal {
     }
 
     public void rm() {
-        String s = this.curr_directory + File.separator + this.parser.args[0];
-        System.out.println(s);
+        String s;
+        if(parser.args[0].contains("/")){
+            s = parser.args[0];
+        } else{
+            s = this.curr_directory + File.separator + this.parser.args[0];
+        }
         File f = new File(s);
         if (f.delete()) {
             System.out.println("deleted successfully...!");
