@@ -17,6 +17,17 @@ public class Terminal {
         curr_directory = System.getProperty("user.home");
         history = new ArrayList<>();
     }
+    public static void main(String[] args) {
+        Terminal terminal = new Terminal();
+
+        while(true){
+            Scanner scanner = new Scanner(System.in);
+            System.out.print(terminal.curr_directory + "> ");
+            String command = scanner.nextLine();
+            command = command.replace("\\", "/");
+            terminal.chooseCommandAction(command);
+        }
+    }
 
     public void echo() {
         for (String text : parser.args) {
@@ -281,38 +292,46 @@ public class Terminal {
             System.out.println("An error occurred while copying the directory: " + e.getMessage());
         }
     }
+
     public void cat() {
-        File f = new File(this.parser.args[0]);
+        File f = new File( this.curr_directory+File.separator+this.parser.args[0]);
         if (!f.canRead()) {
             System.out.println("Wrong Path..!");
-        } else {
+            return;
+        }
+        else {
             String data = "";
-            
             try {
                 Scanner scanner = new Scanner(f);
-                data = data + scanner;
+                while (scanner.hasNextLine()){
+                    data += scanner.nextLine();
+                }
             } catch (FileNotFoundException var6) {
                 var6.printStackTrace();
             }
-            
-            if (this.parser.args.length > 1) {
-                new File(this.parser.args[1]);
+
+            if (this.parser.args.length > 1 && this.parser.args[1]!= null) {
+                f = new File( this.curr_directory+File.separator+this.parser.args[1]);
                 if (!f.canRead()) {
                     System.out.println("Wrong Path..!");
                     return;
                 }
-                
+
                 try {
                     Scanner scanner = new Scanner(f);
-                    data = data + scanner;
+                    while (scanner.hasNextLine()){
+                        data += scanner.nextLine();
+                    }
+                    data += '\n';
                 } catch (FileNotFoundException var5) {
                     var5.printStackTrace();
                 }
             }
-            
+
             System.out.println(data);
         }
     }
+
     public void rm() {
         String s = this.curr_directory + File.separator + this.parser.args[0];
         System.out.println(s);
@@ -324,7 +343,9 @@ public class Terminal {
         }
         
     }
+
     public void getHistory(){
+        history.remove(history.size()-1);
         for (String s : history) {
             System.out.println(s);
         }
