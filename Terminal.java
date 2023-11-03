@@ -144,26 +144,35 @@ public class Terminal {
         }
         
         String directoryPath = parser.args[0];
+        File dir;
         
         if (directoryPath.equals("*")) {
-            File currentDir = new File(curr_directory);
-            removeEmptyDirectories(currentDir);
+            // Case 1: Remove all empty directories in the current directory
+            dir = new File(curr_directory);
         } else {
-            File dir = new File(directoryPath);
-            if (!dir.exists() || !dir.isDirectory()) {
-                System.out.println("The directory does not exist or is not a directory");
-                return;
-            }
-            
-            if (isEmptyDirectory(dir)) {
-                if (dir.delete()) {
-                    System.out.println("Directory removed successfully");
-                } else {
-                    System.out.println("An error occurred while removing the directory");
-                }
+            // Case 2: Remove the specified directory only if it is empty
+            if (directoryPath.contains("/")) {
+                // Full path provided
+                dir = new File(directoryPath);
             } else {
-                System.out.println("The directory is not empty and cannot be removed");
+                // Short path provided, combine it with the current directory
+                dir = new File(curr_directory + File.separator + directoryPath);
             }
+        }
+        
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("The directory does not exist or is not a directory");
+            return;
+        }
+        
+        if (isEmptyDirectory(dir)) {
+            if (dir.delete()) {
+                System.out.println("Directory removed successfully");
+            } else {
+                System.out.println("An error occurred while removing the directory");
+            }
+        } else {
+            System.out.println("The directory is not empty and cannot be removed");
         }
     }
     
@@ -228,13 +237,31 @@ public class Terminal {
         }
     }
     
-    public void cp() {
+   public void cp() {
         if (parser.args.length == 2) {
             String sourcePath = parser.args[0];
             String destinationPath = parser.args[1];
+            File sourceFile;
+            File destinationFile;
             
-            try (InputStream in = new FileInputStream(sourcePath);
-                 OutputStream out = new FileOutputStream(destinationPath)) {
+            if (sourcePath.contains("/")) {
+                // Full path provided for the source file
+                sourceFile = new File(sourcePath);
+            } else {
+                // Short path provided, combine it with the current directory for the source file
+                sourceFile = new File(curr_directory + File.separator + sourcePath);
+            }
+            
+            if (destinationPath.contains("/")) {
+                // Full path provided for the destination file
+                destinationFile = new File(destinationPath);
+            } else {
+                // Short path provided, combine it with the current directory for the destination file
+                destinationFile = new File(curr_directory + File.separator + destinationPath);
+            }
+            
+            try (InputStream in = new FileInputStream(sourceFile);
+                 OutputStream out = new FileOutputStream(destinationFile)) {
                 byte[] buffer = new byte[4096];
                 int bytesRead;
                 
@@ -259,9 +286,24 @@ public class Terminal {
         
         String sourceDirectoryPath = parser.args[1];
         String destinationDirectoryPath = parser.args[2];
+        File sourceDirectory;
+        File destinationDirectory;
         
-        File sourceDirectory = new File(sourceDirectoryPath);
-        File destinationDirectory = new File(destinationDirectoryPath);
+        if (sourceDirectoryPath.contains("/")) {
+            // Full path provided for the source directory
+            sourceDirectory = new File(sourceDirectoryPath);
+        } else {
+            // Short path provided, combine it with the current directory for the source directory
+            sourceDirectory = new File(curr_directory + File.separator + sourceDirectoryPath);
+        }
+        
+        if (destinationDirectoryPath.contains("/")) {
+            // Full path provided for the destination directory
+            destinationDirectory = new File(destinationDirectoryPath);
+        } else {
+            // Short path provided, combine it with the current directory for the destination directory
+            destinationDirectory = new File(curr_directory + File.separator + destinationDirectoryPath);
+        }
         
         if (!sourceDirectory.exists() || !sourceDirectory.isDirectory()) {
             System.out.println("Source directory does not exist or is not a directory");
@@ -273,8 +315,7 @@ public class Terminal {
             return;
         }
         
-        String destinationPath = destinationDirectoryPath + File.separator + sourceDirectory.getName();
-        
+        String destinationPath = destinationDirectory + File.separator + sourceDirectory.getName();
         File destinationPathFile = new File(destinationPath);
         
         try {
@@ -282,6 +323,7 @@ public class Terminal {
                     .forEach(source -> {
                         try {
                             Path dest = destinationPathFile.toPath().resolve(sourceDirectory.toPath().relativize(source));
+                            Files.createDirectories(dest.getParent());
                             Files.copy(source, dest, StandardCopyOption.COPY_ATTRIBUTES);
                         } catch (IOException e) {
                             System.out.println("An error occurred while copying the directory: " + e.getMessage());
