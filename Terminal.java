@@ -135,11 +135,9 @@ public class Terminal {
         String directoryPath = parser.args[0];
         
         if (directoryPath.equals("*")) {
-            // Case 1: Remove all empty directories in the current directory
             File currentDir = new File(curr_directory);
             removeEmptyDirectories(currentDir);
         } else {
-            // Case 2: Remove the specified directory only if it is empty
             File dir = new File(directoryPath);
             if (!dir.exists() || !dir.isDirectory()) {
                 System.out.println("The directory does not exist or is not a directory");
@@ -168,7 +166,6 @@ public class Terminal {
                     }
                 }
             }
-            // After processing subdirectories, try to delete the current directory
             if (isEmptyDirectory(directory)) {
                 if (directory.delete()) {
                     System.out.println("Empty directory removed: " + directory.getAbsolutePath());
@@ -265,7 +262,6 @@ public class Terminal {
             return;
         }
         
-        // Construct the destination path for the source directory within the destination directory
         String destinationPath = destinationDirectoryPath + File.separator + sourceDirectory.getName();
         
         File destinationPathFile = new File(destinationPath);
@@ -383,6 +379,7 @@ public class Terminal {
         }
         else {
             System.out.println("Wrong command");
+            history.remove(history.size()-1);
         }
 
     }
