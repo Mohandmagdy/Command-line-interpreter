@@ -11,7 +11,7 @@ public class Terminal {
     Parser parser;
     ArrayList<String> history ;
     String curr_directory;
-
+    
     public Terminal() {
         parser = new Parser();
         curr_directory = System.getProperty("user.home");
@@ -19,7 +19,7 @@ public class Terminal {
     }
     public static void main(String[] args) {
         Terminal terminal = new Terminal();
-
+        
         while(true){
             Scanner scanner = new Scanner(System.in);
             System.out.print(terminal.curr_directory + "> ");
@@ -28,14 +28,14 @@ public class Terminal {
             terminal.chooseCommandAction(command);
         }
     }
-
+    
     public void echo() {
         for (String text : parser.args) {
             System.out.print(text + ' ');
         }
         System.out.println();
     }
-
+    
     public void pwd() {
         if (parser.args[0] != null) {
             System.out.println("Wrong arguments");
@@ -44,7 +44,7 @@ public class Terminal {
         File currentDir = new File(curr_directory);
         System.out.println(currentDir.getAbsoluteFile());
     }
-
+    
     public void cd() {
         if (parser.args.length > 1 && parser.args[0] != null ) {
             System.out.println("Wrong arguments");
@@ -61,15 +61,16 @@ public class Terminal {
         } else if (parser.args[0] == null) {
             curr_directory = System.getProperty("user.home");
         } else {
-            if (parser.args[0].contains("/")) {
-                File file = new File(parser.args[0]);
+            File file = new File(parser.args[0]);
+            if (file.isAbsolute()) {
+                 file = new File(parser.args[0]);
                 if (file.exists()) {
                     curr_directory = parser.args[0];
                 } else {
                     System.out.println("The directory is not found");
                 }
             } else {
-                File file = new File(curr_directory + "\\" + parser.args[0]);
+                 file = new File(curr_directory + "\\" + parser.args[0]);
                 if (file.exists()) {
                     curr_directory = curr_directory + "\\" + parser.args[0];
                 } else {
@@ -78,7 +79,7 @@ public class Terminal {
             }
         }
     }
-
+    
     public void ls() {
         if (Objects.equals(parser.args[0], "-r") && parser.args.length == 1) {
             ls_reversed();
@@ -99,7 +100,7 @@ public class Terminal {
             System.out.println("The current directory has no content");
         }
     }
-
+    
     public void ls_reversed() {
         File currentDir = new File(curr_directory);
         File[] files = currentDir.listFiles();
@@ -113,11 +114,12 @@ public class Terminal {
             System.out.println("The current directory has no content");
         }
     }
-
+    
     public void mkdir() {
         for (String dir : parser.args) {
-            if (dir.contains("/")) {
-                File file = new File(dir);
+            File file = new File(dir);
+            if (file.isAbsolute()) {
+                 file = new File(dir);
                 boolean state = file.mkdir();
                 if (state) {
                     System.out.println("Directory created successfully");
@@ -126,7 +128,7 @@ public class Terminal {
                 }
             } else {
                 dir = curr_directory + "\\" + dir;
-                File file = new File(dir);
+                 file = new File(dir);
                 boolean state = file.mkdir();
                 if (state) {
                     System.out.println("Directory created successfully");
@@ -152,8 +154,8 @@ public class Terminal {
             removeEmptyDirectories(dir);
             return;
         } else {
-            // Case 2: Remove the specified directory only if it is empty
-            if (directoryPath.contains("/")) {
+            dir = new File(directoryPath);
+            if (dir.isAbsolute()) {
                 // Full path provided
                 dir = new File(directoryPath);
             } else {
@@ -209,10 +211,10 @@ public class Terminal {
         }
         
         String filePath = parser.args[0];
-        
-        if (filePath.contains("/")) {
-            // If the input contains a "/", it's treated as an absolute path
-            File file = new File(filePath);
+        File file = new File(filePath);
+        if (file.isAbsolute()) {
+            
+             file = new File(filePath);
             
             try {
                 if (file.createNewFile()) {
@@ -225,7 +227,7 @@ public class Terminal {
             }
         } else {
             // If the input is a relative (short) path, combine it with the current directory
-            File file = new File(curr_directory + File.separator + filePath);
+             file = new File(curr_directory + File.separator + filePath);
             
             try {
                 if (file.createNewFile()) {
@@ -239,14 +241,14 @@ public class Terminal {
         }
     }
     
-   public void cp() {
+    public void cp() {
         if (parser.args.length == 2) {
             String sourcePath = parser.args[0];
             String destinationPath = parser.args[1];
-            File sourceFile;
-            File destinationFile;
+            File sourceFile = new File(sourcePath);
+            File destinationFile= new File(destinationPath);;
             
-            if (sourcePath.contains("/")) {
+            if (sourceFile.isAbsolute()) {
                 // Full path provided for the source file
                 sourceFile = new File(sourcePath);
             } else {
@@ -254,7 +256,7 @@ public class Terminal {
                 sourceFile = new File(curr_directory + File.separator + sourcePath);
             }
             
-            if (destinationPath.contains("/")) {
+            if (destinationFile.isAbsolute()) {
                 // Full path provided for the destination file
                 destinationFile = new File(destinationPath);
             } else {
@@ -288,10 +290,10 @@ public class Terminal {
         
         String sourceDirectoryPath = parser.args[1];
         String destinationDirectoryPath = parser.args[2];
-        File sourceDirectory;
-        File destinationDirectory;
+        File sourceDirectory= new File(sourceDirectoryPath);
+        File destinationDirectory= new File(destinationDirectoryPath);
         
-        if (sourceDirectoryPath.contains("/")) {
+        if (sourceDirectory.isAbsolute()) {
             // Full path provided for the source directory
             sourceDirectory = new File(sourceDirectoryPath);
         } else {
@@ -299,7 +301,7 @@ public class Terminal {
             sourceDirectory = new File(curr_directory + File.separator + sourceDirectoryPath);
         }
         
-        if (destinationDirectoryPath.contains("/")) {
+        if (destinationDirectory.isAbsolute()) {
             // Full path provided for the destination directory
             destinationDirectory = new File(destinationDirectoryPath);
         } else {
@@ -321,10 +323,11 @@ public class Terminal {
         File destinationPathFile = new File(destinationPath);
         
         try {
+            File finalSourceDirectory = sourceDirectory;
             Files.walk(sourceDirectory.toPath())
                     .forEach(source -> {
                         try {
-                            Path dest = destinationPathFile.toPath().resolve(sourceDirectory.toPath().relativize(source));
+                            Path dest = destinationPathFile.toPath().resolve(finalSourceDirectory.toPath().relativize(source));
                             Files.createDirectories(dest.getParent());
                             Files.copy(source, dest, StandardCopyOption.COPY_ATTRIBUTES);
                         } catch (IOException e) {
@@ -336,15 +339,16 @@ public class Terminal {
             System.out.println("An error occurred while copying the directory: " + e.getMessage());
         }
     }
-
+    
     public void cat() {
-        String myFile;
-        if(parser.args[0].contains("/")){
-            myFile = parser.args[0];
+        String  myFile = parser.args[0];
+        File f = new File(myFile);
+        if(f.isAbsolute()){
+            f = new File(myFile);
         } else {
             myFile = this.curr_directory+File.separator+this.parser.args[0];
+            f = new File(myFile);
         }
-        File f = new File(myFile);
         if (!f.canRead()) {
             System.out.println("Wrong Path..!");
             return;
@@ -359,14 +363,14 @@ public class Terminal {
             } catch (FileNotFoundException var6) {
                 var6.printStackTrace();
             }
-
+            
             if (this.parser.args.length > 1 && this.parser.args[1]!= null) {
                 f = new File( this.curr_directory+File.separator+this.parser.args[1]);
                 if (!f.canRead()) {
                     System.out.println("Wrong Path..!");
                     return;
                 }
-
+                
                 try {
                     Scanner scanner = new Scanner(f);
                     while (scanner.hasNextLine()){
@@ -377,19 +381,21 @@ public class Terminal {
                     var5.printStackTrace();
                 }
             }
-
+            
             System.out.println(data);
         }
     }
-
+    
     public void rm() {
-        String s;
-        if(parser.args[0].contains("/")){
+        String s = parser.args[0];
+        File f = new File(s);
+        if(f.isAbsolute()){
             s = parser.args[0];
+            f = new File(s);
         } else{
             s = this.curr_directory + File.separator + this.parser.args[0];
+            f = new File(s);
         }
-        File f = new File(s);
         if (f.delete()) {
             System.out.println("deleted successfully...!");
         } else {
@@ -397,19 +403,19 @@ public class Terminal {
         }
         
     }
-
+    
     public void getHistory(){
         history.remove(history.size()-1);
         for (String s : history) {
             System.out.println(s);
         }
     }
-
+    
     public void exit_code() {
         System.out.println("Thank you for using our program");
         System.exit(0);
     }
-
+    
     public void chooseCommandAction(String input) {
         Arrays.fill(parser.args, null);
         boolean execute =parser.parse(input);
@@ -433,11 +439,11 @@ public class Terminal {
         }
         else if (Objects.equals(commandName, "touch")) {
             touch();
-         } else if (Objects.equals(commandName, "cp") && Objects.equals(parser.args[0], "-r")) {
+        } else if (Objects.equals(commandName, "cp") && Objects.equals(parser.args[0], "-r")) {
             cp_r();
         }else if (Objects.equals(commandName, "cp")) {
             cp();
-         }else if (Objects.equals(this.parser.commandName, "rm")) {
+        }else if (Objects.equals(this.parser.commandName, "rm")) {
             if (this.parser.args.length != 1) {
                 System.out.println("Wrong Path..!!");
             } else {
@@ -456,6 +462,6 @@ public class Terminal {
             System.out.println("Wrong command");
             history.remove(history.size()-1);
         }
-
+        
     }
 }
