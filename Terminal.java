@@ -149,6 +149,8 @@ public class Terminal {
         if (directoryPath.equals("*")) {
             // Case 1: Remove all empty directories in the current directory
             dir = new File(curr_directory);
+            removeEmptyDirectories(dir);
+            return;
         } else {
             // Case 2: Remove the specified directory only if it is empty
             if (directoryPath.contains("/")) {
